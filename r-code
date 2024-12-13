@@ -11,16 +11,19 @@ inventory_data <- read_csv("D:/Scrips, Codes & Programming/Data Analysis/TABLEAU
 # colSums(is.na(inventory_data))
 # sum(duplicated(inventory_data))
 
-# ---- Quick Data Check ----
+# ---- quick data check ----
+
 str(inventory_data)  # structure of data
 head(inventory_data) # first few rows for sanity check
 summary(inventory_data) # summary stats for the columns
 
-# --- Missing/Duplicates Check ---
-colSums(is.na(inventory_data))  # any missing values?
-sum(duplicated(inventory_data)) # are there duplicate rows?? no? cool.
+# --- missing/duplicates check ---
 
-# ---- Demand Distribution ----
+colSums(is.na(inventory_data))  
+sum(duplicated(inventory_data)) 
+
+# ---- demand distribution ----
+
 # okay let's plot the demand distribution
 ggplot(inventory_data, aes(x = Demand)) +
   geom_histogram(binwidth = 20, fill = "blue", alpha = 0.7) +
@@ -30,8 +33,8 @@ ggplot(inventory_data, aes(x = Demand)) +
     y = "Frequency"
   )
 
-# ---- Lead Time Distribution ----
-# now let's see lead times across suppliers
+# ---- lead time distrib ----
+
 ggplot(inventory_data, aes(x = Lead_Time_Days)) +
   geom_histogram(binwidth = 2, fill = "green", alpha = 0.7) +
   labs(
@@ -40,13 +43,14 @@ ggplot(inventory_data, aes(x = Lead_Time_Days)) +
     y = "Frequency"
   )
 
-# ---- Monthly Demand Aggregation ----
-# group by month and sum up demand
+# ---- monthly demand aggregation ----
+
 monthly_demand <- inventory_data %>%
   group_by(Month) %>%  # Use the correct case for 'Month'
   summarise(total_demand = sum(Demand))  # sum per month
 
-# okay, let’s plot this aggregated demand
+# ---- plotting ----
+
 ggplot(monthly_demand, aes(x = Month, y = total_demand)) +
   geom_line(color = "blue") +
   labs(
@@ -55,8 +59,8 @@ ggplot(monthly_demand, aes(x = Month, y = total_demand)) +
     y = "Total Demand"
   )
 
-# ---- Supplier Analysis ----
-# performance analysis... avg lead time and cost contribution per supplier
+# ---- supplier analysis ----
+
 supplier_analysis <- inventory_data %>%
   group_by(Supplier) %>%  # Use the correct case for 'Supplier'
   summarise(
@@ -65,6 +69,7 @@ supplier_analysis <- inventory_data %>%
   )
 
 # visualize supplier lead times
+
 ggplot(supplier_analysis, aes(x = reorder(Supplier, avg_lead_time), y = avg_lead_time)) +
   geom_bar(stat = "identity", fill = "purple") +
   coord_flip() +  # flip for better readability
@@ -74,16 +79,18 @@ ggplot(supplier_analysis, aes(x = reorder(Supplier, avg_lead_time), y = avg_lead
     y = "Average Lead Time (Days)"
   )
 
-# ---- EOQ + Reorder Points ----
-# now for the real meat: EOQ + reorder points
+# ---- eoq + reorder pts ----
+
 inventory_data <- inventory_data %>%
   mutate(
     eoq = sqrt((2 * Demand * 50) / 2),  # EOQ formula (ordering cost=50, holding cost=2)
     reorder_point = (Lead_Time_Days * Demand / 30) + Safety_Stock  # reorder point formula
   )
 
-# final check on the enriched data
+# final check on enriched data
+
 head(inventory_data)  # quick preview of added columns
 
-# ---- Save the Enriched Data ----
+# ---- saving ----
+
 write_csv(inventory_data, "optimized_inventory_dataset.csv")
